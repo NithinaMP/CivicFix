@@ -7,7 +7,9 @@ import com.civicfix.civicfix.routing.ComplaintRouter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ComplaintService {
@@ -28,11 +30,14 @@ public class ComplaintService {
         complaint.setDepartmentId(deptId);
         complaint.setStatus("PENDING");
 
+        if (complaint.getPriority() == null || complaint.getPriority().isEmpty()) {
+            complaint.setPriority("MEDIUM");
+        }
+
         complaintDAO.saveComplaint(complaint);
 
-        // Observer Pattern triggers here
         notificationService.notifyDepartment(deptName,
-            "New complaint assigned: " + complaint.getTitle());
+            "New " + complaint.getPriority() + " priority complaint: " + complaint.getTitle());
 
         return "Complaint registered! Assigned to: " + deptName + " Department.";
     }
@@ -48,12 +53,34 @@ public class ComplaintService {
     public String updateStatus(int id, String status) {
         Complaint complaint = complaintDAO.getComplaintById(id);
         complaintDAO.updateStatus(id, status);
-
         if (complaint != null) {
             notificationService.notifyObservers(
-                "Complaint #" + id + " status updated to: " + status);
+                "Complaint #" + id + " '" + complaint.getTitle() + "' updated to: " + status);
         }
-
         return "Status updated to: " + status;
+    }
+
+    public List<Complaint> searchComplaints(String keyword) {
+        return complaintDAO.searchComplaints(keyword);
+    }
+
+    public List<Complaint> filterByStatus(String status) {
+        return complaintDAO.getComplaintsByStatus(status);
+    }
+
+    public List<Complaint> filterByPriority(String priority) {
+        return complaintDAO.getComplaintsByPriority(priority);
+    }
+
+    public Map<String, Integer> getStats() {
+        Map<String, Integer> stats = new HashMap<>();
+        stats.put("total", complaintDAO.getAllComplaints().size());
+        stats.put("pending", complaintDAO.countByStatus("PENDING"));
+        stats.put("inProgress", complaintDAO.countByStatus("IN_PROGRESS"));
+        stats.put("resolved", complaintDAO.countByStatus("RESOLVED"));
+        stats.put("high", complaintDAO.countByPriority("HIGH"));
+        stats.put("medium", complaintDAO.countByPriority("MEDIUM"));
+        stats.put("low", complaintDAO.countByPriority("LOW"));
+        return stats;
     }
 }
