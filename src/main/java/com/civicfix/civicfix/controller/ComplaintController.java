@@ -26,6 +26,11 @@ public class ComplaintController {
         return complaintService.getAllComplaints();
     }
 
+    @GetMapping("/user/{userId}")
+    public List<Complaint> getByUser(@PathVariable int userId) {
+        return complaintService.getComplaintsByUser(userId);
+    }
+
     @GetMapping("/{id}")
     public Complaint getComplaintById(@PathVariable int id) {
         return complaintService.getComplaintById(id);

@@ -14,49 +14,37 @@ import java.util.Map;
 @Service
 public class ComplaintService {
 
-    @Autowired
-    private ComplaintDAO complaintDAO;
-
-    @Autowired
-    private ComplaintRouter router;
-
-    @Autowired
-    private NotificationService notificationService;
+    @Autowired private ComplaintDAO complaintDAO;
+    @Autowired private ComplaintRouter router;
+    @Autowired private NotificationService notificationService;
 
     public String registerComplaint(Complaint complaint) {
         int deptId = router.routeComplaint(complaint.getCategory());
         String deptName = router.getDepartmentName(deptId);
-
         complaint.setDepartmentId(deptId);
         complaint.setStatus("PENDING");
-
-        if (complaint.getPriority() == null || complaint.getPriority().isEmpty()) {
+        if (complaint.getPriority() == null || complaint.getPriority().isEmpty())
             complaint.setPriority("MEDIUM");
-        }
-
         complaintDAO.saveComplaint(complaint);
-
         notificationService.notifyDepartment(deptName,
             "New " + complaint.getPriority() + " priority complaint: " + complaint.getTitle());
-
         return "Complaint registered! Assigned to: " + deptName + " Department.";
     }
 
-    public List<Complaint> getAllComplaints() {
-        return complaintDAO.getAllComplaints();
+    public List<Complaint> getAllComplaints() { return complaintDAO.getAllComplaints(); }
+
+    public List<Complaint> getComplaintsByUser(int userId) {
+        return complaintDAO.getComplaintsByUserId(userId);
     }
 
-    public Complaint getComplaintById(int id) {
-        return complaintDAO.getComplaintById(id);
-    }
+    public Complaint getComplaintById(int id) { return complaintDAO.getComplaintById(id); }
 
     public String updateStatus(int id, String status) {
-        Complaint complaint = complaintDAO.getComplaintById(id);
+        Complaint c = complaintDAO.getComplaintById(id);
         complaintDAO.updateStatus(id, status);
-        if (complaint != null) {
+        if (c != null)
             notificationService.notifyObservers(
-                "Complaint #" + id + " '" + complaint.getTitle() + "' updated to: " + status);
-        }
+                "Complaint #" + id + " '" + c.getTitle() + "' updated to: " + status);
         return "Status updated to: " + status;
     }
 
@@ -81,6 +69,10 @@ public class ComplaintService {
         stats.put("high", complaintDAO.countByPriority("HIGH"));
         stats.put("medium", complaintDAO.countByPriority("MEDIUM"));
         stats.put("low", complaintDAO.countByPriority("LOW"));
+        stats.put("electrical", complaintDAO.countByDepartment(1));
+        stats.put("plumbing", complaintDAO.countByDepartment(2));
+        stats.put("sanitation", complaintDAO.countByDepartment(3));
+        stats.put("road", complaintDAO.countByDepartment(4));
         return stats;
     }
 }
