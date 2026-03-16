@@ -485,10 +485,16 @@ tr.clickable:hover td{background:#0f172a;}
 </div>
 
 <script>
+// const D={1:'Electrical',2:'Plumbing',3:'Sanitation',4:'Road Maintenance'};
+// const DEPT_ICONS={1:'⚡',2:'🔧',3:'🗑️',4:'🛣️'};
+// const DEPT_COLORS={1:'#fbbf24',2:'#a78bfa',3:'#4ade80',4:'#38bdf8'};
+// let ME=null, charts={}, currentComplaint=null;
 const D={1:'Electrical',2:'Plumbing',3:'Sanitation',4:'Road Maintenance'};
 const DEPT_ICONS={1:'⚡',2:'🔧',3:'🗑️',4:'🛣️'};
 const DEPT_COLORS={1:'#fbbf24',2:'#a78bfa',3:'#4ade80',4:'#38bdf8'};
 let ME=null, charts={}, currentComplaint=null;
+let activeAdminFilter={type:null, value:null};
+let activeUserFilter={type:null, value:null};
 
 /* ── AUTH ── */
 function switchTab(t){
@@ -681,8 +687,18 @@ async function adminSearch(){
   renderAdminTable(data);
 }
 
+// async function adminFilter(type,val){
+//   if(!val){loadAdminComplaints();return;}
+//   const data=await(await fetch('/complaints/filter?'+type+'='+val)).json();
+//   renderAdminTable(data);
+// }
 async function adminFilter(type,val){
-  if(!val){loadAdminComplaints();return;}
+  if(!val){
+    activeAdminFilter={type:null,value:null};
+    loadAdminComplaints();
+    return;
+  }
+  activeAdminFilter={type,value:val};
   const data=await(await fetch('/complaints/filter?'+type+'='+val)).json();
   renderAdminTable(data);
 }
@@ -842,8 +858,18 @@ async function userSearch(){
   renderUserTable(data);
 }
 
+// async function userFilter(type,val){
+//   if(!val){loadUserComplaints();return;}
+//   const data=await(await fetch('/complaints/filter?'+type+'='+val)).json();
+//   renderUserTable(data);
+// }
 async function userFilter(type,val){
-  if(!val){loadUserComplaints();return;}
+  if(!val){
+    activeUserFilter={type:null,value:null};
+    loadUserComplaints();
+    return;
+  }
+  activeUserFilter={type,value:val};
   const data=await(await fetch('/complaints/filter?'+type+'='+val)).json();
   renderUserTable(data);
 }
