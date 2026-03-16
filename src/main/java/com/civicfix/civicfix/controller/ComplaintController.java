@@ -1,9 +1,11 @@
 package com.civicfix.civicfix.controller;
 
 import com.civicfix.civicfix.model.Complaint;
+import com.civicfix.civicfix.model.Notification;
 import com.civicfix.civicfix.service.ComplaintService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -17,8 +19,21 @@ public class ComplaintController {
     private ComplaintService complaintService;
 
     @PostMapping
-    public String createComplaint(@RequestBody Complaint complaint) {
-        return complaintService.registerComplaint(complaint);
+    public String createComplaint(
+            @RequestParam("title") String title,
+            @RequestParam("description") String description,
+            @RequestParam("category") String category,
+            @RequestParam("priority") String priority,
+            @RequestParam(value = "userId", defaultValue = "0") int userId,
+            @RequestParam(value = "image", required = false) MultipartFile image) {
+
+        Complaint complaint = new Complaint();
+        complaint.setTitle(title);
+        complaint.setDescription(description);
+        complaint.setCategory(category);
+        complaint.setPriority(priority);
+        complaint.setUserId(userId);
+        return complaintService.registerComplaint(complaint, image);
     }
 
     @GetMapping
@@ -37,8 +52,11 @@ public class ComplaintController {
     }
 
     @PutMapping("/{id}/status")
-    public String updateStatus(@PathVariable int id, @RequestParam String status) {
-        return complaintService.updateStatus(id, status);
+    public String updateStatus(
+            @PathVariable int id,
+            @RequestParam String status,
+            @RequestParam(required = false, defaultValue = "") String resolutionNote) {
+        return complaintService.updateStatus(id, status, resolutionNote);
     }
 
     @GetMapping("/search")
@@ -58,5 +76,16 @@ public class ComplaintController {
     @GetMapping("/stats")
     public Map<String, Integer> getStats() {
         return complaintService.getStats();
+    }
+
+    @GetMapping("/notifications")
+    public List<Notification> getNotifications() {
+        return complaintService.getNotifications();
+    }
+
+    @DeleteMapping("/notifications")
+    public String clearNotifications() {
+        complaintService.clearNotifications();
+        return "Notifications cleared";
     }
 }

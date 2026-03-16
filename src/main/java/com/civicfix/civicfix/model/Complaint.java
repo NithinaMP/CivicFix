@@ -10,6 +10,9 @@ public class Complaint {
     private int departmentId;
     private int userId;
     private String createdAt;
+    private String imagePath;
+    private String resolutionNote;
+    private String resolvedAt;
 
     public Complaint() {}
 
@@ -31,4 +34,10 @@ public class Complaint {
     public void setUserId(int userId) { this.userId = userId; }
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
+    public String getResolutionNote() { return resolutionNote; }
+    public void setResolutionNote(String resolutionNote) { this.resolutionNote = resolutionNote; }
+    public String getResolvedAt() { return resolvedAt; }
+    public void setResolvedAt(String resolvedAt) { this.resolvedAt = resolvedAt; }
 }

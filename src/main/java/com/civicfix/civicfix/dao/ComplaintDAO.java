@@ -17,7 +17,7 @@ public class ComplaintDAO {
     private JdbcTemplate jdbcTemplate;
 
     public void saveComplaint(Complaint complaint) {
-        String sql = "INSERT INTO complaints(title, description, category, status, priority, department_id, user_id) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO complaints(title, description, category, status, priority, department_id, user_id, image_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql,
                 complaint.getTitle(),
                 complaint.getDescription(),
@@ -25,7 +25,8 @@ public class ComplaintDAO {
                 complaint.getStatus(),
                 complaint.getPriority(),
                 complaint.getDepartmentId(),
-                complaint.getUserId());
+                complaint.getUserId(),
+                complaint.getImagePath());
     }
 
     public List<Complaint> getAllComplaints() {
@@ -44,9 +45,14 @@ public class ComplaintDAO {
         return results.isEmpty() ? null : results.get(0);
     }
 
-    public void updateStatus(int id, String status) {
-        String sql = "UPDATE complaints SET status = ? WHERE id = ?";
-        jdbcTemplate.update(sql, status, id);
+    public void updateStatus(int id, String status, String resolutionNote) {
+        if ("RESOLVED".equalsIgnoreCase(status)) {
+            String sql = "UPDATE complaints SET status=?, resolution_note=?, resolved_at=NOW() WHERE id=?";
+            jdbcTemplate.update(sql, status, resolutionNote, id);
+        } else {
+            String sql = "UPDATE complaints SET status=? WHERE id=?";
+            jdbcTemplate.update(sql, status, id);
+        }
     }
 
     public List<Complaint> getComplaintsByStatus(String status) {
@@ -67,19 +73,19 @@ public class ComplaintDAO {
 
     public int countByStatus(String status) {
         Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM complaints WHERE status = ?", Integer.class, status);
+            "SELECT COUNT(*) FROM complaints WHERE status=?", Integer.class, status);
         return count != null ? count : 0;
     }
 
     public int countByPriority(String priority) {
         Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM complaints WHERE priority = ?", Integer.class, priority);
+            "SELECT COUNT(*) FROM complaints WHERE priority=?", Integer.class, priority);
         return count != null ? count : 0;
     }
 
     public int countByDepartment(int deptId) {
         Integer count = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) FROM complaints WHERE department_id = ?", Integer.class, deptId);
+            "SELECT COUNT(*) FROM complaints WHERE department_id=?", Integer.class, deptId);
         return count != null ? count : 0;
     }
 
@@ -96,6 +102,9 @@ public class ComplaintDAO {
             c.setDepartmentId(rs.getInt("department_id"));
             c.setUserId(rs.getInt("user_id"));
             try { c.setCreatedAt(rs.getString("created_at")); } catch(Exception e) {}
+            try { c.setImagePath(rs.getString("image_path")); } catch(Exception e) {}
+            try { c.setResolutionNote(rs.getString("resolution_note")); } catch(Exception e) {}
+            try { c.setResolvedAt(rs.getString("resolved_at")); } catch(Exception e) {}
             return c;
         }
     }
